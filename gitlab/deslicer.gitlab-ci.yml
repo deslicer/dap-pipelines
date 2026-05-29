@@ -1,0 +1,59 @@
+# GitLab CI — install `deslicer` from signed `deslicer/cli` releases and run `deslicer change`.
+#
+# Customer usage:
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/deslicer/dap-pipelines/main/gitlab/deslicer.gitlab-ci.yml'
+#
+# Jobs that call Observer require GitLab OIDC:
+#   id_tokens:
+#     DESLICER_OIDC_TOKEN:
+#       aud: https://api.deslicer.ai
+
+.deslicer-install:
+  variables:
+    DESLICER_VERSION: "v1.0.0"
+  before_script:
+    - apk add --no-cache curl tar coreutils cosign || true
+    - >
+      curl -sSfL "https://github.com/deslicer/cli/releases/download/${DESLICER_VERSION}/deslicer-x86_64-unknown-linux-musl.tar.gz"
+      -o /tmp/deslicer.tar.gz
+    - >
+      curl -sSfL "https://github.com/deslicer/cli/releases/download/${DESLICER_VERSION}/deslicer-x86_64-unknown-linux-musl.tar.gz.sha256"
+      -o /tmp/deslicer.tar.gz.sha256
+    - cd /tmp && sha256sum -c deslicer.tar.gz.sha256
+    - >
+      curl -sSfL "https://github.com/deslicer/cli/releases/download/${DESLICER_VERSION}/deslicer-x86_64-unknown-linux-musl.tar.gz.sig"
+      -o /tmp/deslicer.tar.gz.sig
+    - >
+      cosign verify-blob
+      --certificate-identity="https://github.com/deslicer/cli/.github/workflows/release.yml@refs/tags/${DESLICER_VERSION}"
+      --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+      --signature /tmp/deslicer.tar.gz.sig
+      /tmp/deslicer.tar.gz
+    - tar -xzf /tmp/deslicer.tar.gz -C /usr/local/bin
+    - deslicer --version
+
+.deslicer-change-plan:
+  extends: .deslicer-install
+  script:
+    - deslicer change plan --environment "${DESLICER_ENVIRONMENT}"
+
+.deslicer-change-approve:
+  extends: .deslicer-install
+  script:
+    - deslicer change approve --environment "${DESLICER_ENVIRONMENT}"
+
+.deslicer-change-reject:
+  extends: .deslicer-install
+  script:
+    - deslicer change reject --environment "${DESLICER_ENVIRONMENT}"
+
+.deslicer-change-show:
+  extends: .deslicer-install
+  script:
+    - deslicer change show --environment "${DESLICER_ENVIRONMENT}"
+
+.deslicer-change-status:
+  extends: .deslicer-install
+  script:
+    - deslicer change status --environment "${DESLICER_ENVIRONMENT}"

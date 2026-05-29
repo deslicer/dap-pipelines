@@ -1,0 +1,37 @@
+# Customer copy-paste snippet for Bitbucket Pipelines.
+# Bitbucket has no include: semantics — paste into bitbucket-pipelines.yml.
+
+definitions:
+  steps:
+    - step: &deslicer-change-plan
+        name: Deslicer change plan
+        oidc: true
+        image: alpine:3.20
+        script:
+          - apk add --no-cache curl tar coreutils cosign
+          - export DESLICER_VERSION=v1.0.0
+          - export ARCHIVE=deslicer-x86_64-unknown-linux-musl.tar.gz
+          - export BASE="https://github.com/deslicer/cli/releases/download/${DESLICER_VERSION}"
+          - curl -sSfL "${BASE}/${ARCHIVE}" -o "/tmp/${ARCHIVE}"
+          - curl -sSfL "${BASE}/${ARCHIVE}.sha256" -o "/tmp/${ARCHIVE}.sha256"
+          - cd /tmp && sha256sum -c "${ARCHIVE}.sha256"
+          - curl -sSfL "${BASE}/${ARCHIVE}.sig" -o "/tmp/${ARCHIVE}.sig"
+          - >
+            cosign verify-blob
+            --certificate-identity="https://github.com/deslicer/cli/.github/workflows/release.yml@refs/tags/${DESLICER_VERSION}"
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+            --signature "/tmp/${ARCHIVE}.sig"
+            "/tmp/${ARCHIVE}"
+          - tar -xzf "/tmp/${ARCHIVE}" -C /usr/local/bin
+          - deslicer --version
+          - deslicer change plan --environment "${DESLICER_ENVIRONMENT}"
+
+pipelines:
+  branches:
+    main:
+      - step:
+          <<: *deslicer-change-plan
+          deployment: production
+          variables:
+            DESLICER_ENVIRONMENT: production
+            OBSERVER_API_URL: https://api.deslicer.ai

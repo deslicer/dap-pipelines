@@ -1,0 +1,5 @@
+# Pinned SHA-256 of the Bitbucket install script when hosted at get.deslicer.ai.
+# Updated by .github/workflows/bump-checksum.yml on deslicer/cli releases.
+# Until get.deslicer.ai is live, customers verify tarball checksums from GitHub Releases directly.
+
+PLACEHOLDER_UPDATE_ON_FIRST_RELEASE

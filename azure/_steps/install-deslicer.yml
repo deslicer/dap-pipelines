@@ -1,0 +1,23 @@
+parameters:
+  - name: version
+    type: string
+    default: 'v1.0.0'
+
+steps:
+  - bash: |
+      set -euo pipefail
+      VERSION="${{ parameters.version }}"
+      ARCHIVE="deslicer-x86_64-unknown-linux-musl.tar.gz"
+      BASE="https://github.com/deslicer/cli/releases/download/${VERSION}"
+      curl -sSfL "${BASE}/${ARCHIVE}" -o "/tmp/${ARCHIVE}"
+      curl -sSfL "${BASE}/${ARCHIVE}.sha256" -o "/tmp/${ARCHIVE}.sha256"
+      cd /tmp && sha256sum -c "${ARCHIVE}.sha256"
+      curl -sSfL "${BASE}/${ARCHIVE}.sig" -o "/tmp/${ARCHIVE}.sig"
+      cosign verify-blob \
+        --certificate-identity="https://github.com/deslicer/cli/.github/workflows/release.yml@refs/tags/${VERSION}" \
+        --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+        --signature "/tmp/${ARCHIVE}.sig" \
+        "/tmp/${ARCHIVE}"
+      tar -xzf "/tmp/${ARCHIVE}" -C /usr/local/bin
+      deslicer --version
+    displayName: Install deslicer CLI (${{ parameters.version }})

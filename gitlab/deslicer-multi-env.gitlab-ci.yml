@@ -1,0 +1,20 @@
+# Multi-environment GitLab variant — extend per job with parallel:matrix on DESLICER_ENVIRONMENT.
+#
+# Example customer job:
+#   reconcile_all:
+#     extends: .deslicer-change-plan
+#     parallel:
+#       matrix:
+#         - DESLICER_ENVIRONMENT: [staging, production]
+#     id_tokens:
+#       DESLICER_OIDC_TOKEN:
+#         aud: https://api.deslicer.ai
+
+include:
+  - local: 'deslicer.gitlab-ci.yml'
+
+# Placeholder job documenting the matrix pattern (does not run — hidden template only).
+.deslicer-matrix-example:
+  extends: .deslicer-change-plan
+  rules:
+    - when: never

@@ -1,0 +1,32 @@
+name: Validate templates
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitlab-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v6
+      - name: YAML syntax check
+        run: python3 -c "import yaml,sys; yaml.safe_load(open('gitlab/deslicer.gitlab-ci.yml'))"
+
+  azure-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v6
+      - name: Template files present
+        run: test -f azure/deslicer.yml && test -f azure/_steps/install-deslicer.yml
+
+  bitbucket-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v6
+      - name: Snippet present
+        run: test -f bitbucket/deslicer-snippet.yml

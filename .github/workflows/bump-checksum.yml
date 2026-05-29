@@ -1,0 +1,19 @@
+name: Bump Bitbucket install checksum
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [deslicer-cli-release]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v6
+      - name: Note
+        run: |
+          echo "get.deslicer.ai install script not yet hosted — manual bump of bitbucket/install-checksum.txt until Task 8 CDN lands."
