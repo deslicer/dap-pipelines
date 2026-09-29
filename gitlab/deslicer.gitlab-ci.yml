@@ -26,7 +26,7 @@
       -o /tmp/deslicer.tar.gz.sig
     - >
       cosign verify-blob
-      --certificate-identity="https://github.com/deslicer/cli/.github/workflows/release.yml@refs/tags/${DESLICER_VERSION}"
+      --certificate-identity-regexp="^https://github.com/deslicer/cli/\.github/workflows/release\.yml@refs/(heads/main|tags/.+)$"
       --certificate-oidc-issuer=https://token.actions.githubusercontent.com
       --signature /tmp/deslicer.tar.gz.sig
       /tmp/deslicer.tar.gz

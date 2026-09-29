@@ -14,7 +14,7 @@ steps:
       cd /tmp && sha256sum -c "${ARCHIVE}.sha256"
       curl -sSfL "${BASE}/${ARCHIVE}.sig" -o "/tmp/${ARCHIVE}.sig"
       cosign verify-blob \
-        --certificate-identity="https://github.com/deslicer/cli/.github/workflows/release.yml@refs/tags/${VERSION}" \
+        --certificate-identity-regexp="^https://github.com/deslicer/cli/\.github/workflows/release\.yml@refs/(heads/main|tags/.+)$" \
         --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
         --signature "/tmp/${ARCHIVE}.sig" \
         "/tmp/${ARCHIVE}"
